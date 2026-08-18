@@ -5,6 +5,7 @@ const {
   cadastrar,
   login,
   perfil,
+  listar,
   editar,
   desativar,
   esqueciSenha,
@@ -24,6 +25,11 @@ router.post("/cadastrar", cadastrar);
 // Login
 // POST /api/usuarios/login
 router.post("/login", login);
+
+// Listar todos os usuarios ativos
+// GET /api/usuarios
+router.get("/", Authenticar, listar);
+
 
 // Solicitar e-mail de recuperação de senha
 // POST /api/usuarios/esqueci-senha
