@@ -349,6 +349,7 @@ module.exports = {
   cadastrar,
   login,
   perfil,
+  listar,
   editar,
   desativar,
   esqueciSenha,
