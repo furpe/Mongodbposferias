@@ -5,7 +5,7 @@ const {
   cadastrar,
   login,
   perfil,
-  listar,
+  listar, // <-- CORREÇÃO: Função listar importada
   editar,
   desativar,
   esqueciSenha,
@@ -41,7 +41,7 @@ router.post("/redefinir-senha", redefinirSenha);
 
 // Listar todos os usuários ativos
 // GET /api/usuarios
-router.get("/", autenticar, listar);
+router.get("/", autenticar, listar); // <-- CORREÇÃO: Rota GET configurada corretamente
 
 // Ver dados do próprio perfil
 // GET /api/usuarios/perfil
