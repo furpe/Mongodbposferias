@@ -5,6 +5,7 @@ const {
   cadastrar,
   login,
   perfil,
+  listar,
   editar,
   desativar,
   esqueciSenha,
@@ -37,6 +38,10 @@ router.post("/redefinir-senha", redefinirSenha);
 // ROTAS PRIVADAS (precisam do token JWT)
 // O middleware "autenticar" é executado antes do controller
 // ─────────────────────────────────────────────
+
+// Listar todos os usuários ativos
+// GET /api/usuarios
+router.get("/", autenticar, listar);
 
 // Ver dados do próprio perfil
 // GET /api/usuarios/perfil
