@@ -41,7 +41,7 @@ router.post("/redefinir-senha", redefinirSenha);
 
 // Listar todos os usuários ativos
 // GET /api/usuarios
-router.get("/", autenticar, listar); // <-- CORREÇÃO: Rota GET configurada corretamente
+router.get("/listar", autenticar, listar); // <-- CORREÇÃO: Rota GET configurada corretamente
 
 // Ver dados do próprio perfil
 // GET /api/usuarios/perfil
