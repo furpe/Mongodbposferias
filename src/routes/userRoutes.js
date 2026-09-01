@@ -5,7 +5,7 @@ const {
   cadastrar,
   login,
   perfil,
-  listar, // <-- CORREÇÃO: Função listar importada
+  listar, // novo
   editar,
   desativar,
   esqueciSenha,
@@ -26,6 +26,10 @@ router.post("/cadastrar", cadastrar);
 // POST /api/usuarios/login
 router.post("/login", login);
 
+// Listar todos os usuários ativos
+// GET /api/usuarios
+router.get("/", autenticar, listar);
+
 // Solicitar e-mail de recuperação de senha
 // POST /api/usuarios/esqueci-senha
 router.post("/esqueci-senha", esqueciSenha);
@@ -38,10 +42,6 @@ router.post("/redefinir-senha", redefinirSenha);
 // ROTAS PRIVADAS (precisam do token JWT)
 // O middleware "autenticar" é executado antes do controller
 // ─────────────────────────────────────────────
-
-// Listar todos os usuários ativos
-// GET /api/usuarios
-router.get("/listar", autenticar, listar); // <-- CORREÇÃO: Rota GET configurada corretamente
 
 // Ver dados do próprio perfil
 // GET /api/usuarios/perfil
