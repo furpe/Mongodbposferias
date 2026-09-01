@@ -85,6 +85,7 @@ const login = async (req, res) => {
     );
 
     // Verifica se o usuário existe E se a senha está correta
+    // (verificamos os dois juntos por segurança, para não revelar qual está errado)
     if (!usuario || !(await usuario.senhaCorreta(senha))) {
       return res.status(401).json({
         sucesso: false,
@@ -134,10 +135,10 @@ const perfil = async (req, res) => {
 
 // ─────────────────────────────────────────────
 // GET /api/usuarios
-// Lista todos os usuarios ativos (rota protegida)
+// Lista todos os usuários ativos (rota protegida)
 // ─────────────────────────────────────────────
 const listar = async (req, res) => {
-  try {
+  try{
     const usuarios = await Usuario.find({ ativo: true }).sort({ createdAt: -1 });
 
     return res.status(200).json({
@@ -145,19 +146,20 @@ const listar = async (req, res) => {
       total: usuarios.length,
       usuarios: usuarios.map((u) => ({
         id: u._id,
-        nome: u.nome,
+        nome:u.nome,
         email: u.email,
-        criadoEm: u.createdAt
+        criadoEm: u.createdAt,
       })),
-    });
+    })
   } catch (erro) {
     return res.status(500).json({
       sucesso: false,
-      mensagem: "Erro interno no server",
+      mensagem: "Erro interno no servidor.",
       erro: erro.message,
     });
   }
 };
+
 
 // ─────────────────────────────────────────────
 // PUT /api/usuarios/editar
@@ -183,7 +185,7 @@ const editar = async (req, res) => {
     if (email) {
       const emailEmUso = await Usuario.findOne({
         email,
-        _id: { $ne: req.usuario._id }, // Diferente do usuário atual
+        _id: { $ne: req.usuario._id }, // $ne = "not equal" (diferente do usuário atual)
       });
       if (emailEmUso) {
         return res.status(400).json({
@@ -197,7 +199,7 @@ const editar = async (req, res) => {
     const usuarioAtualizado = await Usuario.findByIdAndUpdate(
       req.usuario._id,
       dadosAtualizados,
-      { new: true, runValidators: true } 
+      { new: true, runValidators: true } // new: true → retorna o doc atualizado
     );
 
     return res.status(200).json({
@@ -221,6 +223,7 @@ const editar = async (req, res) => {
 // ─────────────────────────────────────────────
 // DELETE /api/usuarios/desativar
 // Desativa a conta do usuário (soft delete)
+// O registro permanece no banco, apenas ativo=false
 // ─────────────────────────────────────────────
 const desativar = async (req, res) => {
   try {
@@ -256,6 +259,8 @@ const esqueciSenha = async (req, res) => {
 
     const usuario = await Usuario.findOne({ email, ativo: true });
 
+    // Por segurança, retornamos a mesma mensagem mesmo se o e-mail não existir
+    // (para não revelar quais e-mails estão cadastrados no sistema)
     if (!usuario) {
       return res.status(200).json({
         sucesso: true,
@@ -264,12 +269,12 @@ const esqueciSenha = async (req, res) => {
       });
     }
 
-    // Gera um token aleatório seguro 
+    // Gera um token aleatório seguro (32 bytes em hexadecimal = 64 caracteres)
     const token = crypto.randomBytes(32).toString("hex");
 
-    // Salva o token e define expiração de 1 hora
+    // Salva o token e define expiração de 1 hora a partir de agora
     usuario.tokenRedefinicaoSenha = token;
-    usuario.tokenRedefinicaoExpira = new Date(Date.now() + 60 * 60 * 1000); 
+    usuario.tokenRedefinicaoExpira = new Date(Date.now() + 60 * 60 * 1000); // +1 hora
     await usuario.save({ validateBeforeSave: false });
 
     // Envia o e-mail com o link de redefinição
@@ -304,10 +309,10 @@ const redefinirSenha = async (req, res) => {
       });
     }
 
-    // Busca o usuário pelo token E verifica se não expirou
+    // Busca o usuário pelo token E verifica se ainda não expirou
     const usuario = await Usuario.findOne({
       tokenRedefinicaoSenha: token,
-      tokenRedefinicaoExpira: { $gt: Date.now() }, 
+      tokenRedefinicaoExpira: { $gt: Date.now() }, // $gt = "greater than" (maior que agora)
     }).select("+tokenRedefinicaoSenha +tokenRedefinicaoExpira +senha");
 
     if (!usuario) {
@@ -317,13 +322,13 @@ const redefinirSenha = async (req, res) => {
       });
     }
 
-    // Atualiza a senha e limpa os campos
+    // Atualiza a senha e limpa os campos de token
     usuario.senha = novaSenha;
     usuario.tokenRedefinicaoSenha = undefined;
     usuario.tokenRedefinicaoExpira = undefined;
-    await usuario.save(); 
+    await usuario.save(); // o pre-save vai fazer o hash da nova senha automaticamente
 
-    // Gera um novo token JWT
+    // Gera um novo token JWT para o usuário já ficar logado
     const jwtToken = gerarToken(usuario._id);
 
     return res.status(200).json({
@@ -344,7 +349,7 @@ module.exports = {
   cadastrar,
   login,
   perfil,
-  listar,
+  listar, // novo
   editar,
   desativar,
   esqueciSenha,
